@@ -1,5 +1,8 @@
 # els-addon-import-specifiers
-ELS addon for jumping to the import specifiers directly
+
+![els-addon-import-specifiers](els-addon.gif)
+
+### An ELS addon that allows jumping to the import specifiers directly
 
 For example:
 
