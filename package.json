@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/suchitadoshi1987/els-import-definitions.git"
+    "url": "git+https://github.com/suchitadoshi1987/els-addon-import-specifiers.git"
   },
   "author": "Suchita Doshi <suchitadoshi1987@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/suchitadoshi1987/els-import-definitions/issues"
+    "url": "https://github.com/suchitadoshi1987/els-addon-import-specifiers/issues"
   },
-  "homepage": "https://github.com/suchitadoshi1987/els-import-definitions#readme",
+  "homepage": "https://github.com/suchitadoshi1987/els-addon-import-specifiers#readme",
   "dependencies": {
     "@glint/core": "^0.4.1",
     "@lifeart/ember-language-server": "^1.6.0",
