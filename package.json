@@ -1,7 +1,7 @@
 {
-  "name": "els-addon-glint",
-  "version": "0.0.3",
-  "description": "",
+  "name": "els-addon-import-specifiers",
+  "version": "0.0.1",
+  "description": "Jump to import specifiers in a project",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -9,17 +9,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lifeart/els-addon-glint.git"
+    "url": "git+https://github.com/suchitadoshi1987/els-import-definitions.git"
   },
-  "author": "Aleksandr Kanunnikov <lifeart92@gmail.com>",
+  "author": "Suchita Doshi <suchitadoshi1987@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/lifeart/els-addon-glint/issues"
+    "url": "https://github.com/suchitadoshi1987/els-import-definitions/issues"
   },
-  "homepage": "https://github.com/lifeart/els-addon-glint#readme",
+  "homepage": "https://github.com/suchitadoshi1987/els-import-definitions#readme",
   "dependencies": {
     "@glint/core": "^0.4.1",
-    "@lifeart/ember-language-server": "^1.0.5",
+    "@lifeart/ember-language-server": "^1.6.0",
     "vscode-jsonrpc": "^6.0.0",
     "vscode-languageserver-protocol": "^3.16.0",
     "vscode-languageserver-textdocument": "^1.0.1",
@@ -29,9 +29,7 @@
     "entry": "./index",
     "debug": false,
     "capabilities": {
-      "completionProvider": true,
-      "definitionProvider": true,
-      "referencesProvider": true
+      "definitionProvider": true
     }
   },
   "devDependencies": {

@@ -1,138 +1,76 @@
 "use strict";
-var _loadTypescript = require("@glint/core/lib/common/load-typescript");
-var _config = require("@glint/config");
-var _util = require("@glint/core/lib/language-server/util");
-var _glintLanguageServer = _interopRequireDefault(require("@glint/core/lib/language-server/glint-language-server"));
-function _interopRequireDefault(obj) {
-    return obj && obj.__esModule ? obj : {
-        default: obj
-    };
-}
-function debounce(threshold, f) {
-    let pending;
-    return ()=>{
-        if (pending) {
-            clearTimeout(pending);
-        }
-        setTimeout(f, threshold);
-    };
-}
-function buildHelpers({ languageServer , documents , connection  }) {
-    return {
-        scheduleDiagnostics: debounce(250, ()=>{
-            for (let { uri  } of documents.all()){
-                const diagnostics = languageServer.getDiagnostics(uri);
-                connection.sendDiagnostics({
-                    uri,
-                    diagnostics
-                });
-            }
-        }),
-        captureErrors (callback) {
-            try {
-                return callback();
-            } catch (error) {
-                var _stack;
-                connection.console.error((_stack = error.stack) !== null && _stack !== void 0 ? _stack : error);
+var t = _interopRequireWildcard(require("@babel/types"));
+var fs = _interopRequireWildcard(require("fs"));
+var _node = require("vscode-languageserver/node");
+var _vscodeUri = require("vscode-uri");
+function _interopRequireWildcard(obj) {
+    if (obj && obj.__esModule) {
+        return obj;
+    } else {
+        var newObj = {
+        };
+        if (obj != null) {
+            for(var key in obj){
+                if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                    var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {
+                    };
+                    if (desc.get || desc.set) {
+                        Object.defineProperty(newObj, key, desc);
+                    } else {
+                        newObj[key] = obj[key];
+                    }
+                }
             }
         }
-    };
+        newObj.default = obj;
+        return newObj;
+    }
+}
+function getImportSpecifierName(importDeclaration, position) {
+    const importNameData = importDeclaration.specifiers.find((item)=>{
+        var ref, ref1, ref2;
+        const importLine = (ref = item.loc) === null || ref === void 0 ? void 0 : ref.start.line;
+        const importStartCol = (ref1 = item.loc) === null || ref1 === void 0 ? void 0 : ref1.start.column;
+        const importStartEnd = (ref2 = item.loc) === null || ref2 === void 0 ? void 0 : ref2.end.column;
+        return importStartCol && importStartEnd && position.line + 1 === importLine && importStartCol <= position.character && importStartEnd >= position.character;
+    });
+    return importNameData && importNameData.type === 'ImportSpecifier' ? importNameData.imported.name : '';
+}
+function pathsToLocations(paths, importName) {
+    return paths.map((modulePath)=>{
+        const uriPath = modulePath.uri;
+        const file = fs.readFileSync(_vscodeUri.URI.parse(uriPath).path, 'utf8');
+        const arr = file.split(/\r?\n/);
+        const idxFound = arr.findIndex((line)=>line.includes(importName) && line.includes('export')
+        );
+        return _node.Location.create(modulePath.uri, _node.Range.create(idxFound, 0, idxFound, 0));
+    });
+}
+function hasNodeType(node, type) {
+    if (!node) {
+        return false;
+    }
+    return node.type === type;
+}
+function isImportSpecifier(path) {
+    return hasNodeType(path.parent, 'ImportSpecifier');
 }
 module.exports = (function() {
-    class ElsAddonQunitTestRunner {
-        onInit(server, project) {
-            this.server = server;
-            this.project = project;
-            let destroy = this.bindLanguageServer();
-            return ()=>{
-                destroy();
-            };
-        }
-        bindLanguageServer() {
-            let connection = this.server.connection;
-            let documents = this.server.documents;
-            const ts = _loadTypescript.loadTypeScript();
-            const glintConfig = _config.findConfig(this.project.root);
-            const tsconfigPath = ts.findConfigFile(this.project.root, ts.sys.fileExists);
-            const { fileNames , options  } = _util.parseConfigFile(ts, tsconfigPath);
-            const tsFileNames = fileNames.filter((fileName)=>/\.ts$/.test(fileName)
-            );
-            const baseProjectRoots = new Set(tsFileNames);
-            const getRootFileNames = ()=>{
-                return tsFileNames.concat(documents.all().map((doc)=>_util.uriToFilePath(doc.uri)
-                ).filter((path)=>path.endsWith(".ts") && !baseProjectRoots.has(path)
-                ));
-            };
-            const languageServer = new _glintLanguageServer.default(ts, glintConfig, getRootFileNames, options);
-            this.languageServer = languageServer;
-            let { scheduleDiagnostics , captureErrors  } = buildHelpers({
-                connection,
-                documents,
-                languageServer
-            });
-            // connection.onInitialize(() => ({ capabilities }));
-            documents.onDidOpen(({ document  })=>{
-                languageServer.openFile(document.uri, document.getText());
-                scheduleDiagnostics();
-            });
-            documents.onDidClose(({ document  })=>{
-                languageServer.closeFile(document.uri);
-            });
-            documents.onDidChangeContent(({ document  })=>{
-                languageServer.updateFile(document.uri, document.getText());
-                scheduleDiagnostics();
-            });
-            // connection.onPrepareRename(({ textDocument, position }) => {
-            //   return captureErrors(() =>
-            //     languageServer.prepareRename(textDocument.uri, position)
-            //   );
-            // });
-            // connection.onRenameRequest(({ textDocument, position, newName }) => {
-            //   return captureErrors(() =>
-            //     languageServer.getEditsForRename(textDocument.uri, position, newName)
-            //   );
-            // });
-            connection.onCompletionResolve((item)=>{
-                var ref;
-                return (ref = captureErrors(()=>languageServer.getCompletionDetails(item)
-                )) !== null && ref !== void 0 ? ref : item;
-            });
-            connection.onHover(({ textDocument , position  })=>{
-                return captureErrors(()=>languageServer.getHover(textDocument.uri, position)
-                );
-            });
-            connection.onWorkspaceSymbol(({ query  })=>{
-                return captureErrors(()=>languageServer.findSymbols(query)
-                );
-            });
-            connection.onDidChangeWatchedFiles(()=>{
-            });
-            return ()=>{
-                languageServer.dispose();
-            };
-        }
-        async onComplete(_, params) {
-            const results = await this.languageServer.getCompletions(params.textDocument.uri, params.position);
-            return [
-                ...results,
-                ...params.results
-            ];
-        }
+    class ElsAddonImportDefinition {
         async onDefinition(_, params) {
-            const results = await this.languageServer.getDefinition(params.textDocument.uri, params.position);
+            const results = params.results;
+            if (isImportSpecifier(params.focusPath)) {
+                const importDec = params.focusPath.parentFromLevel(2);
+                const importName = getImportSpecifierName(importDec, params.position);
+                if (importName) {
+                    return pathsToLocations(params.results, importName);
+                }
+            }
             return [
-                ...results,
-                ...params.results
-            ];
-        }
-        async onReference(_, params) {
-            const results = this.languageServer.getReferences(params.textDocument.uri, params.position);
-            return [
-                ...results,
-                ...params.results
+                ...results
             ];
         }
     }
-    return ElsAddonQunitTestRunner;
+    return ElsAddonImportDefinition;
 })();
 
