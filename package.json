@@ -1,6 +1,6 @@
 {
   "name": "els-addon-import-specifiers",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Jump to import specifiers in a project",
   "main": "index.js",
   "scripts": {
