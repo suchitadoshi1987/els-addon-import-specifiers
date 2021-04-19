@@ -18,7 +18,6 @@
   },
   "homepage": "https://github.com/suchitadoshi1987/els-addon-import-specifiers#readme",
   "dependencies": {
-    "@glint/core": "^0.4.1",
     "@lifeart/ember-language-server": "^1.6.0",
     "vscode-jsonrpc": "^6.0.0",
     "vscode-languageserver-protocol": "^3.16.0",
